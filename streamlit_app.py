@@ -54,10 +54,22 @@ input_data = {
 def make_predictions(input_data):
     predictions = {}
     for model_name, model in models.items():
-        data = np.array(input_data[model_name]).reshape(1, -1)
-        prob = model.predict_proba(data)[0][1]  # Assuming binary classification
-        predictions[model_name] = round(prob * 100, 2)
+        # Ensure that the input data for each model is a 2D array with the correct shape
+        data = np.array(input_data[model_name]).reshape(1, -1)  # Reshaping to (1, n_features)
+        
+        # Log the input shape for debugging purposes
+        print(f"Input shape for model {model_name}: {data.shape}")
+        
+        try:
+            prob = model.predict_proba(data)[0][1]  # Assuming binary classification
+            predictions[model_name] = round(prob * 100, 2)
+        except Exception as e:
+            # In case of errors, log the model name and the exception
+            print(f"Error with model {model_name}: {e}")
+            predictions[model_name] = "Error"
+    
     return predictions
+
 
 # Get predictions
 if st.button("Predict"):
