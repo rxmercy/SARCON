@@ -53,7 +53,7 @@ input_data = {
     "major": ladder_encoded + location_v3_encoded + [tl, bmi] + nart_encoded + [tw],  # 6+7+1+1+2+1 = 18 features
     "ssi": ladder_encoded + location_v3_encoded + [tl] + nart_encoded + [lst, bmi, lsl],  # 6+7+1+2+1+1+1 = 19 features
     "id": [lsl] + ladder_encoded + location_v3_encoded + nart_encoded + [tl],  # 1+6+7+2+1 = 17 features
-    "seroma": ladder_encoded + location_v3_encoded + [bmi, tl, tw]  # 6+7+1+1+1 = 18 features
+    "seroma": ladder_encoded + location_v3_encoded + nart_encoded + [bmi, tl, tw]  # 6+7+2+1+1+1 = 18 features
 }
 
 # Function to make predictions
