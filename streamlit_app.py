@@ -1,6 +1,7 @@
 import streamlit as st
 import pickle
 import numpy as np
+import Orange
 
 # Load all models
 models = {
@@ -55,16 +56,39 @@ def make_predictions(input_data):
     predictions = {}
     for model_name, model in models.items():
         data = np.array(input_data[model_name]).reshape(1, -1)  # Reshape input to 2D array (1 sample)
-        
-        # Debugging: Print input data being passed to the model
-        print(f"Input data for {model_name} model: {data}")
-        
+
+        # Convert input data to Orange Table format (same as the example)
+        if model_name == "minor":
+            domain = Orange.data.Domain([
+                Orange.data.DiscreteVariable("ladder", ladder_options),
+                Orange.data.DiscreteVariable("location_v3", location_v3_options),
+                Orange.data.ContinuousVariable("bmi"),
+                Orange.data.ContinuousVariable("tt"),
+                Orange.data.ContinuousVariable("tw"),
+                Orange.data.ContinuousVariable("tl"),
+                Orange.data.DiscreteVariable("nart", nart_options)
+            ])
+        elif model_name == "major":
+            domain = Orange.data.Domain([
+                Orange.data.DiscreteVariable("ladder", ladder_options),
+                Orange.data.DiscreteVariable("location_v3", location_v3_options),
+                Orange.data.ContinuousVariable("tl"),
+                Orange.data.ContinuousVariable("bmi"),
+                Orange.data.DiscreteVariable("nart", nart_options),
+                Orange.data.ContinuousVariable("tw")
+            ])
+        # Add more conditions for other models as necessary
+
+        # Create Orange Table from input data
+        orange_data = Orange.data.Table(domain, [data])
+
+        # Make predictions using the model
         try:
-            prob = model.predict_proba(data)[0][1]  # Assuming binary classification (class 1)
+            prob = model.predict_proba(orange_data)[0][1]  # Assuming binary classification
             predictions[model_name] = round(prob * 100, 2)
         except Exception as e:
             print(f"Error with model {model_name}: {e}")
-            predictions[model_name] = "Error"
+            predictions[model_name] = f"Error: {e}"
     return predictions
 
 # Get predictions
@@ -74,8 +98,8 @@ if st.button("Predict"):
     # Display results with thermometer-like progress bars
     st.subheader("Predicted Probabilities")
     for outcome, prob in predictions.items():
-        if prob == "Error":
-            st.write(f"Error with model {outcome.capitalize()} prediction.")
+        if "Error" in str(prob):
+            st.write(f"Error with model {outcome.capitalize()} prediction: {prob}")
         else:
             st.write(f"{outcome.capitalize()} Risk: {prob}%")
             if isinstance(prob, (int, float)) and 0 <= prob <= 100:
