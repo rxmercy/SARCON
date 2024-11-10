@@ -4,11 +4,11 @@ import numpy as np
 
 # Load models
 models = {
-    "minor": pickle.load(open("models/minor.pkcls", "rb")),
-    "major": pickle.load(open("models/major.pkcls", "rb")),
-    "ssi": pickle.load(open("models/ssi.pkcls", "rb")),
-    "id": pickle.load(open("models/id.pkcls", "rb")),
-    "seroma": pickle.load(open("models/seroma.pkcls", "rb"))
+    "minor": pickle.load(open("minor.pkcls", "rb")),
+    "major": pickle.load(open("major.pkcls", "rb")),
+    "ssi": pickle.load(open("ssi.pkcls", "rb")),
+    "id": pickle.load(open("id.pkcls", "rb")),
+    "seroma": pickle.load(open("seroma.pkcls", "rb"))
 }
 
 # Input options for categorical variables
