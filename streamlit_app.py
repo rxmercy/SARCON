@@ -2,7 +2,7 @@ import streamlit as st
 import pickle
 import numpy as np
 
-# Load all models using pickle
+# Load all models
 models = {
     "minor": pickle.load(open("minor.pkcls", "rb")),
     "major": pickle.load(open("major.pkcls", "rb")),
@@ -43,7 +43,7 @@ nart_encoded = nart_options.index(nart)
 
 # Prepare input data for each model
 input_data = {
-    "minor": [ladder_encoded, bmi, location_v3_encoded, tt, tw, tl, nart_encoded],
+    "minor": [ladder_encoded, location_v3_encoded, bmi, tt, tw, tl, nart_encoded],
     "major": [ladder_encoded, location_v3_encoded, tl, bmi, nart_encoded, tw],
     "ssi": [ladder_encoded, location_v3_encoded, tl, nart_encoded, lst, bmi, lsl],
     "id": [lsl, ladder_encoded, location_v3_encoded, nart_encoded, tl],
@@ -54,22 +54,14 @@ input_data = {
 def make_predictions(input_data):
     predictions = {}
     for model_name, model in models.items():
-        # Ensure that the input data for each model is a 2D array with the correct shape
-        data = np.array(input_data[model_name]).reshape(1, -1)  # Reshaping to (1, n_features)
-        
-        # Log the input shape for debugging purposes
-        print(f"Input shape for model {model_name}: {data.shape}")
-        
+        data = np.array(input_data[model_name]).reshape(1, -1)  # Reshape input to 2D array (1 sample)
         try:
-            prob = model.predict_proba(data)[0][1]  # Assuming binary classification
+            prob = model.predict_proba(data)[0][1]  # Assuming binary classification (class 1)
             predictions[model_name] = round(prob * 100, 2)
         except Exception as e:
-            # In case of errors, log the model name and the exception
             print(f"Error with model {model_name}: {e}")
             predictions[model_name] = "Error"
-    
     return predictions
-
 
 # Get predictions
 if st.button("Predict"):
