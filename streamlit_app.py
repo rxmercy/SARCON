@@ -25,15 +25,43 @@ tw = st.number_input("Tumor width (mediolateral), cm")
 tt = st.number_input("Tumor thickness (anteroposterior), cm")
 lst = st.number_input("Limb segment length (craniocaudal), cm")
 lsl = st.number_input("Limb segment thickness (anteroposterior), cm")
-ladder = st.slider("Reconstructive ladder", min_value=1, max_value=6)  # Assuming slider values from 1 to 6
+ladder = st.select_slider("Reconstructive ladder", options=["primary closure", "complex repair", "sg", "local flap", "pedicled flap", "free flap"])
+
+# Encode categorical variables as they were during model training
+location_v3_mapping = {
+    "shoulder, upperarm or elbow": 0,
+    "forearm or wrist": 1,
+    "hand": 2,
+    "thigh or knee": 3,
+    "lower leg or ankle": 4,
+    "foot or toe": 5
+}
+nart_mapping = {
+    "no": 0,
+    "yes": 1
+}
+ladder_mapping = {
+    "primary closure": 0,
+    "complex repair": 1,
+    "sg": 2,
+    "local flap": 3,
+    "pedicled flap": 4,
+    "free flap": 5
+}
+
+# Convert inputs to numeric values
+location_v3_num = location_v3_mapping[location_v3]
+nart_num = nart_mapping[nart]
+ladder_num = ladder_mapping[ladder]
+
+# Prepare model inputs
+minor_input = [ladder_num, bmi, location_v3_num, tt, tw, tl, nart_num]
+major_input = [ladder_num, location_v3_num, tl, bmi, nart_num, tw]
+ssi_input = [ladder_num, location_v3_num, tl, nart_num, lst, bmi, lsl]
+id_input = [lsl, ladder_num, location_v3_num, nart_num, tl]
+seroma_input = [ladder_num, location_v3_num, bmi, tl, tw]
 
 # Make predictions
-minor_input = [ladder, bmi, location_v3, tt, tw, tl, nart]
-major_input = [ladder, location_v3, tl, bmi, nart, tw]
-ssi_input = [ladder, location_v3, tl, nart, lst, bmi, lsl]
-id_input = [lsl, ladder, location_v3, nart, tl]
-seroma_input = [ladder, location_v3, bmi, tl, tw]
-
 minor_pred = minor_model.predict_proba(np.array(minor_input).reshape(1, -1))[0, 1]
 major_pred = major_model.predict_proba(np.array(major_input).reshape(1, -1))[0, 1]
 ssi_pred = ssi_model.predict_proba(np.array(ssi_input).reshape(1, -1))[0, 1]
