@@ -1,11 +1,10 @@
 import streamlit as st
 import Orange
 import numpy as np
-pip install orange3
 
 # App title and description
 st.title('Soft Tissue Sarcoma Reconstruction Nomogram (SaRcoN)')
-st.info('This tool predicts reconstructive outcomes in limb-sparing extremity soft tissue sarcoma surgery.')
+st.info('This tool predicts reconstructive outcomes in limb-sparing soft tissue sarcoma resections.')
 
 # Load all models using Orange's API
 models = {
