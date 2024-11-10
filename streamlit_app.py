@@ -27,39 +27,39 @@ lst = st.number_input("Limb segment length (craniocaudal), cm")
 lsl = st.number_input("Limb segment thickness (anteroposterior), cm")
 ladder = st.select_slider("Reconstructive ladder", options=["primary closure", "complex repair", "sg", "local flap", "pedicled flap", "free flap"])
 
-# Encode categorical variables as they were during model training
+# One-hot encoding for categorical variables
 location_v3_mapping = {
-    "shoulder, upperarm or elbow": 0,
-    "forearm or wrist": 1,
-    "hand": 2,
-    "thigh or knee": 3,
-    "lower leg or ankle": 4,
-    "foot or toe": 5
+    "shoulder, upperarm or elbow": [1, 0, 0, 0, 0, 0],
+    "forearm or wrist": [0, 1, 0, 0, 0, 0],
+    "hand": [0, 0, 1, 0, 0, 0],
+    "thigh or knee": [0, 0, 0, 1, 0, 0],
+    "lower leg or ankle": [0, 0, 0, 0, 1, 0],
+    "foot or toe": [0, 0, 0, 0, 0, 1]
 }
 nart_mapping = {
-    "no": 0,
-    "yes": 1
+    "no": [1, 0],
+    "yes": [0, 1]
 }
 ladder_mapping = {
-    "primary closure": 0,
-    "complex repair": 1,
-    "sg": 2,
-    "local flap": 3,
-    "pedicled flap": 4,
-    "free flap": 5
+    "primary closure": [1, 0, 0, 0, 0, 0],
+    "complex repair": [0, 1, 0, 0, 0, 0],
+    "sg": [0, 0, 1, 0, 0, 0],
+    "local flap": [0, 0, 0, 1, 0, 0],
+    "pedicled flap": [0, 0, 0, 0, 1, 0],
+    "free flap": [0, 0, 0, 0, 0, 1]
 }
 
-# Convert inputs to numeric values
+# Convert inputs to one-hot encoded values
 location_v3_num = location_v3_mapping[location_v3]
 nart_num = nart_mapping[nart]
 ladder_num = ladder_mapping[ladder]
 
 # Prepare model inputs
-minor_input = [ladder_num, bmi, location_v3_num, tt, tw, tl, nart_num]
-major_input = [ladder_num, location_v3_num, tl, bmi, nart_num, tw]
-ssi_input = [ladder_num, location_v3_num, tl, nart_num, lst, bmi, lsl]
-id_input = [lsl, ladder_num, location_v3_num, nart_num, tl]
-seroma_input = [ladder_num, location_v3_num, bmi, tl, tw]
+minor_input = ladder_num + location_v3_num + [bmi, tt, tw, tl] + nart_num
+major_input = ladder_num + location_v3_num + [tl, bmi] + nart_num + [tw]
+ssi_input = ladder_num + location_v3_num + [tl] + nart_num + [lst, bmi, lsl]
+id_input = [lsl] + ladder_num + location_v3_num + nart_num + [tl]
+seroma_input = ladder_num + location_v3_num + [bmi, tl, tw]
 
 # Make predictions
 minor_pred = minor_model.predict_proba(np.array(minor_input).reshape(1, -1))[0, 1]
