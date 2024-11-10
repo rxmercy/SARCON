@@ -78,5 +78,11 @@ if st.button("Predict"):
     # Display results with thermometer-like progress bars
     st.subheader("Predicted Probabilities")
     for outcome, prob in predictions.items():
-        st.write(f"{outcome.capitalize()} Risk: {prob}%")
-        st.progress(prob / 100)
+        if prob == "Error":
+            st.write(f"Error with model {outcome.capitalize()} prediction.")
+        else:
+            st.write(f"{outcome.capitalize()} Risk: {prob}%")
+            if isinstance(prob, (int, float)) and 0 <= prob <= 100:
+                st.progress(prob / 100)  # Display progress bar for valid probability values
+            else:
+                st.write("Invalid probability value. Please check model outputs.")
