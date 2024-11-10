@@ -1,30 +1,19 @@
 import streamlit as st
-
-st.title('soft tissue Sarcoma Reconstruction Nomogram (SaRcoN')
-
-st.info('This is an tool to predict reconstructive outcomes in limb-sparing extremity soft tissue sarcoma surgery')
-
-import streamlit as st
 import Orange
-import pickle
 import numpy as np
+pip install orange3
 
-# Load all models
+# App title and description
+st.title('Soft Tissue Sarcoma Reconstruction Nomogram (SaRcoN)')
+st.info('This tool predicts reconstructive outcomes in limb-sparing extremity soft tissue sarcoma surgery.')
+
+# Load all models using Orange's API
 models = {
-with open("minor.pkcls","rb") as minor:
-    minor = pickle.load(minor)
-
-with open("major.pkcls","rb") as major:
-    major = pickle.load(major)
-
-with open("ssi.pkcls","rb") as ssi:
-    ssi = pickle.load(ssi)
-
-with open("id.pkcls","rb") as id:
-    id = pickle.load(id)
-
-with open("seroma.pkcls","rb") as seroma:
-    seroma = pickle.load(seroma)
+    "minor": Orange.data.io.load_pickle("minor.pkcls"),
+    "major": Orange.data.io.load_pickle("major.pkcls"),
+    "ssi": Orange.data.io.load_pickle("ssi.pkcls"),
+    "id": Orange.data.io.load_pickle("id.pkcls"),
+    "seroma": Orange.data.io.load_pickle("seroma.pkcls")
 }
 
 # Define input options for categorical variables
@@ -38,10 +27,10 @@ ladder_options = [
 ]
 nart_options = ["no", "yes"]
 
-# Create the input form
+# Input form
 st.title("Predictive App for Surgical Outcomes")
 
-# Input fields
+# Collect user inputs
 location_v3 = st.selectbox("STS Location", location_v3_options)
 ladder = st.select_slider("Reconstructive Ladder", options=ladder_options)
 bmi = st.number_input("Body Mass Index", min_value=10.0, max_value=50.0, step=0.1)
@@ -66,21 +55,24 @@ input_data = {
     "seroma": [ladder_encoded, location_v3_encoded, bmi, tl, tw]
 }
 
-# Function to make predictions
+# Function to make predictions using Orange models
 def make_predictions(input_data):
     predictions = {}
     for model_name, model in models.items():
         data = np.array(input_data[model_name]).reshape(1, -1)
-        prob = model.predict_proba(data)[0][1]  # Assuming binary classification
+        prob = model(data, model.Probs)[0][1]  # Get the probability of the positive class
         predictions[model_name] = round(prob * 100, 2)
     return predictions
 
-# Get predictions
+# Get predictions when user clicks the button
 if st.button("Predict"):
-    predictions = make_predictions(input_data)
+    try:
+        predictions = make_predictions(input_data)
 
-    # Display results with thermometer-like progress bars
-    st.subheader("Predicted Probabilities")
-    for outcome, prob in predictions.items():
-        st.write(f"{outcome.capitalize()} Risk: {prob}%")
-        st.progress(prob / 100)
+        # Display results with thermometer-like progress bars
+        st.subheader("Predicted Probabilities")
+        for outcome, prob in predictions.items():
+            st.write(f"{outcome.capitalize()} Risk: {prob}%")
+            st.progress(prob / 100)
+    except Exception as e:
+        st.error(f"An error occurred during prediction: {e}")
