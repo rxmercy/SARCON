@@ -1,4 +1,4 @@
-# 🤖 Machine learning app to predict outcomes of sarcoma reconstruction
+# 🤖 Soft tissue SArcoma ReCONstruction
 ```
 ## Application
 
