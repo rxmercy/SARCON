@@ -1,7 +1,6 @@
 import streamlit as st
 import pickle
 import numpy as np
-import pandas as pd
 
 # Load models
 models = {
@@ -44,26 +43,26 @@ lst = st.number_input("Limb Segment Length (craniocaudal), cm", min_value=0.0)
 lsl = st.number_input("Limb Segment Thickness (anteroposterior), cm", min_value=0.0)
 
 # One-hot encode categorical variables
-location_v3_encoded = one_hot_encode(location_v3, location_v3_options)
-ladder_encoded = one_hot_encode(ladder, ladder_options)
-nart_encoded = one_hot_encode(nart, nart_options)
+location_v3_encoded = one_hot_encode(location_v3, location_v3_options)  # 7 columns
+ladder_encoded = one_hot_encode(ladder, ladder_options)  # 6 columns
+nart_encoded = one_hot_encode(nart, nart_options)  # 2 columns
 
-# Prepare input data for each model
+# Prepare input data for each model with the correct number of features
 input_data = {
-    "minor": ladder_encoded + location_v3_encoded + [bmi, tt, tw, tl] + nart_encoded,
-    "major": ladder_encoded + location_v3_encoded + [tl, bmi] + nart_encoded + [tw],
-    "ssi": ladder_encoded + location_v3_encoded + [tl] + nart_encoded + [lst, bmi, lsl],
-    "id": [lsl] + ladder_encoded + location_v3_encoded + nart_encoded + [tl],
-    "seroma": ladder_encoded + location_v3_encoded + [bmi, tl, tw]
+    "minor": ladder_encoded + location_v3_encoded + [bmi, tt, tw, tl] + nart_encoded,  # 6+7+1+1+1+1+2 = 19 features
+    "major": ladder_encoded + location_v3_encoded + [tl, bmi] + nart_encoded + [tw],  # 6+7+1+1+2+1 = 18 features
+    "ssi": ladder_encoded + location_v3_encoded + [tl] + nart_encoded + [lst, bmi, lsl],  # 6+7+1+2+1+1+1 = 19 features
+    "id": [lsl] + ladder_encoded + location_v3_encoded + nart_encoded + [tl],  # 1+6+7+2+1 = 17 features
+    "seroma": ladder_encoded + location_v3_encoded + [bmi, tl, tw]  # 6+7+1+1+1 = 18 features
 }
 
 # Function to make predictions
 def make_predictions(input_data):
     predictions = {}
     for model_name, model in models.items():
-        data = np.array(input_data[model_name]).reshape(1, -1)  # Reshape input to 2D array
+        data = np.array(input_data[model_name]).reshape(1, -1)
         try:
-            prob = model.predict_proba(data)[0][1]  # Probability of class 1 (positive outcome)
+            prob = model.predict_proba(data)[0][1]  # Probability of class 1
             predictions[model_name] = round(prob * 100, 2)
         except Exception as e:
             st.error(f"Error with {model_name} model: {e}")
