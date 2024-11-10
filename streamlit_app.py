@@ -36,7 +36,7 @@ nart = st.selectbox("Neoadjuvant Radiotherapy", nart_options)
 lst = st.number_input("Limb Segment Length (craniocaudal), cm", min_value=0.0)
 lsl = st.number_input("Limb Segment Thickness (anteroposterior), cm", min_value=0.0)
 
-# Encode categorical variables
+# Encode categorical variables as integer indices
 location_v3_encoded = location_v3_options.index(location_v3)
 ladder_encoded = ladder_options.index(ladder)
 nart_encoded = nart_options.index(nart)
@@ -55,6 +55,10 @@ def make_predictions(input_data):
     predictions = {}
     for model_name, model in models.items():
         data = np.array(input_data[model_name]).reshape(1, -1)  # Reshape input to 2D array (1 sample)
+        
+        # Debugging: Print input data being passed to the model
+        print(f"Input data for {model_name} model: {data}")
+        
         try:
             prob = model.predict_proba(data)[0][1]  # Assuming binary classification (class 1)
             predictions[model_name] = round(prob * 100, 2)
